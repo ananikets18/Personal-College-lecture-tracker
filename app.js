@@ -82,28 +82,28 @@ function renderCards() {
 
   filtered.forEach(item => {
     const card = document.createElement("div")
-    card.className = "bg-slate-800 rounded-lg p-4 shadow-lg space-y-3"
+    card.className = "bg-slate-100 dark:bg-slate-800 rounded-lg p-4 shadow-lg space-y-3 transition-colors duration-300"
 
-    const status = getStatus(item)
+    const statusText = getStatus(item)
     const statusColor =
-      status === "Ahead" ? "text-green-400" :
-      status === "On Track" ? "text-yellow-400" :
-      "text-red-400"
+      statusText === "Ahead" ? "text-green-600 dark:text-green-400" :
+      statusText === "On Track" ? "text-yellow-600 dark:text-yellow-400" :
+      "text-red-600 dark:text-red-400"
 
     card.innerHTML = `
-      <h3 class="text-lg font-semibold">${item.subject} — ${item.unit}</h3>
-      <p class="text-sm text-slate-400">${item.topics}</p>
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-200">${item.subject} — ${item.unit}</h3>
+      <p class="text-sm text-slate-700 dark:text-slate-400">${item.topics}</p>
       <div>
-        <div class="text-xs mb-1">Covered: ${item.covered}%</div>
-        <div class="w-full bg-slate-700 rounded-full h-2">
+        <div class="text-xs mb-1 text-slate-600 dark:text-slate-300">Covered: ${item.covered}%</div>
+        <div class="w-full bg-slate-300 dark:bg-slate-700 rounded-full h-2">
           <div class="h-2 bg-sky-500 rounded-full" style="width:${item.covered}%"></div>
         </div>
       </div>
       <div class="flex justify-between items-center mt-3">
-        <div class="text-xs ${statusColor}">${status}</div>
+        <div class="text-xs ${statusColor}">${statusText}</div>
         <div class="space-x-2">
-          <button class="edit-btn px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded" data-id="${item.id}">✏ Edit</button>
-          <button class="delete-btn px-2 py-1 text-xs bg-red-600 hover:bg-red-700 rounded" data-id="${item.id}">🗑 Delete</button>
+          <button class="edit-btn px-2 py-1 text-xs bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 rounded transition-colors" data-id="${item.id}">✏ Edit</button>
+          <button class="delete-btn px-2 py-1 text-xs bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 rounded transition-colors" data-id="${item.id}">🗑 Delete</button>
         </div>
       </div>
     `
@@ -121,6 +121,7 @@ function renderCards() {
 
   updateSummary(filtered)
 }
+
 
 function updateSummary(data) {
   if (data.length === 0) {
