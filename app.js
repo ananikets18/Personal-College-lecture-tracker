@@ -1,5 +1,5 @@
 // =====================
-// Sem III Tracker - app.js (Supabase version)
+// Sem III Tracker - app.js (Supabase + Dynamic Topics + Checklist Progress)
 // =====================
 
 // =====================
@@ -16,12 +16,13 @@ const addUnitBtn = document.getElementById("addUnitBtn")
 const addModal = document.getElementById("addModal")
 const modalSubject = document.getElementById("modalSubject")
 const modalUnit = document.getElementById("modalUnit")
-const modalTopics = document.getElementById("modalTopics")
 const modalCovered = document.getElementById("modalCovered")
 const modalCancel = document.getElementById("modalCancel")
 const modalSave = document.getElementById("modalSave")
 const modalTitle = document.getElementById("modalTitle")
 const toast = document.getElementById("toast")
+const modalTopicsContainer = document.getElementById("modalTopicsContainer")
+const addTopicBtn = document.getElementById("addTopicBtn")
 
 // =====================
 // Data
@@ -42,7 +43,17 @@ async function fetchData() {
     console.error('Error fetching data:', error)
     return
   }
-  trackerData = data
+
+  // Ensure topics are arrays
+  trackerData = data.map(item => ({
+    ...item,
+    topics: Array.isArray(item.topics)
+      ? item.topics
+      : item.topics
+        ? JSON.parse(item.topics)
+        : []
+  }))
+
   populateSubjectFilter()
   renderCards()
 }
@@ -58,7 +69,7 @@ function populateSubjectFilter() {
 }
 
 // =====================
-// Rendering
+// Rendering Cards
 // =====================
 function renderCards() {
   cardsContainer.innerHTML = ""
@@ -76,13 +87,14 @@ function renderCards() {
     filtered = filtered.filter(item =>
       item.unit.toLowerCase().includes(query) ||
       item.subject.toLowerCase().includes(query) ||
-      item.topics.toLowerCase().includes(query)
+      item.topics.some(t => t.name.toLowerCase().includes(query))
     )
   }
 
   filtered.forEach(item => {
-    const card = document.createElement("div")
-    card.className = "bg-slate-100 dark:bg-slate-800 rounded-lg p-4 shadow-lg space-y-3 transition-colors duration-300"
+    const totalTopics = item.topics.length
+    const completedTopics = item.topics.filter(t => t.done).length
+    item.covered = totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100)
 
     const statusText = getStatus(item)
     const statusColor =
@@ -90,9 +102,20 @@ function renderCards() {
       statusText === "On Track" ? "text-yellow-600 dark:text-yellow-400" :
       "text-red-600 dark:text-red-400"
 
+    const card = document.createElement("div")
+    card.className = "bg-slate-100 dark:bg-slate-800 rounded-lg p-4 shadow-lg space-y-3 transition-colors duration-300"
+
+    // Topic checklist HTML
+    const topicsHTML = item.topics.map((t, idx) => `
+      <label class="flex items-center space-x-2 text-slate-700 dark:text-slate-300 text-sm">
+        <input type="checkbox" class="topic-checkbox" data-unit-id="${item.id}" data-topic-idx="${idx}" ${t.done ? "checked" : ""}>
+        <span>${t.name}</span>
+      </label>
+    `).join("")
+
     card.innerHTML = `
       <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-200">${item.subject} — ${item.unit}</h3>
-      <p class="text-sm text-slate-700 dark:text-slate-400">${item.topics}</p>
+      <div class="space-y-1">${topicsHTML}</div>
       <div>
         <div class="text-xs mb-1 text-slate-600 dark:text-slate-300">Covered: ${item.covered}%</div>
         <div class="w-full bg-slate-300 dark:bg-slate-700 rounded-full h-2">
@@ -102,8 +125,8 @@ function renderCards() {
       <div class="flex justify-between items-center mt-3">
         <div class="text-xs ${statusColor}">${statusText}</div>
         <div class="space-x-2">
-          <button class="edit-btn px-2 py-1 text-xs bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 rounded transition-colors" data-id="${item.id}">✏ Edit</button>
-          <button class="delete-btn px-2 py-1 text-xs bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 rounded transition-colors" data-id="${item.id}">🗑 Delete</button>
+          <button class="edit-btn px-2 py-1 text-xs bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 rounded transition-colors" data-id="${item.id}">✏ Edit</button>
+          <button class="delete-btn px-2 py-1 text-xs bg-red-500 text-white dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 rounded transition-colors" data-id="${item.id}">🗑 Delete</button>
         </div>
       </div>
     `
@@ -111,10 +134,54 @@ function renderCards() {
     cardsContainer.appendChild(card)
   })
 
+  // =====================
+  // Optimized Topic Checkbox Update
+  // =====================
+  document.querySelectorAll(".topic-checkbox").forEach(checkbox => {
+    checkbox.addEventListener("change", async e => {
+      const unitId = e.target.dataset.unitId
+      const topicIdx = e.target.dataset.topicIdx
+      const unit = trackerData.find(u => u.id === unitId)
+      unit.topics[topicIdx].done = e.target.checked
+
+      // Update covered %
+      const total = unit.topics.length
+      const completed = unit.topics.filter(t => t.done).length
+      unit.covered = total === 0 ? 0 : Math.round((completed / total) * 100)
+
+      // Persist to Supabase
+      await supabase.from("progress").update({ topics: unit.topics, covered: unit.covered }).eq("id", unitId)
+
+      // Update only this card
+      const card = e.target.closest("div.bg-slate-100, div.bg-slate-800")
+      if (card) {
+        const coveredText = card.querySelector("div.text-xs.mb-1")
+        if (coveredText) coveredText.textContent = `Covered: ${unit.covered}%`
+
+        const progressBar = card.querySelector("div.w-full.bg-slate-300 div.bg-sky-500")
+        if (progressBar) progressBar.style.width = `${unit.covered}%`
+
+        const statusEl = card.querySelector("div.text-xs.text-green-600, div.text-xs.text-yellow-600, div.text-xs.text-red-600")
+        if (statusEl) {
+          const statusText = getStatus(unit)
+          statusEl.textContent = statusText
+          statusEl.className = `text-xs ${
+            statusText === "Ahead" ? "text-green-600 dark:text-green-400" :
+            statusText === "On Track" ? "text-yellow-600 dark:text-yellow-400" :
+            "text-red-600 dark:text-red-400"
+          }`
+        }
+      }
+
+      // Update summary
+      updateSummary(trackerData)
+    })
+  })
+
+  // Edit/Delete buttons
   document.querySelectorAll(".edit-btn").forEach(btn => {
     btn.addEventListener("click", () => openModal(btn.dataset.id))
   })
-
   document.querySelectorAll(".delete-btn").forEach(btn => {
     btn.addEventListener("click", () => deleteUnit(btn.dataset.id))
   })
@@ -122,7 +189,9 @@ function renderCards() {
   updateSummary(filtered)
 }
 
-
+// =====================
+// Summary
+// =====================
 function updateSummary(data) {
   if (data.length === 0) {
     summaryEl.textContent = "No units found."
@@ -141,32 +210,51 @@ function getStatus(item) {
 // =====================
 // Modal Handling
 // =====================
+function createTopicInput(value = "") {
+  const wrapper = document.createElement("div")
+  wrapper.className = "flex items-center space-x-2"
+  const input = document.createElement("input")
+  input.type = "text"
+  input.value = value
+  input.className = "flex-1 px-3 py-2 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white transition"
+  wrapper.appendChild(input)
+  const removeBtn = document.createElement("button")
+  removeBtn.type = "button"
+  removeBtn.textContent = "🗑"
+  removeBtn.className = "px-2 py-1 bg-red-500 dark:bg-red-600 text-white rounded hover:bg-red-600 dark:hover:bg-red-700 transition"
+  removeBtn.addEventListener("click", () => wrapper.remove())
+  wrapper.appendChild(removeBtn)
+  modalTopicsContainer.appendChild(wrapper)
+}
+
+addTopicBtn.addEventListener("click", () => createTopicInput())
+
 function openModal(id = null) {
   addModal.classList.remove("hidden")
-   setTimeout(() => addModal.classList.remove("opacity-0"), 10); // fade in
+  setTimeout(() => addModal.classList.remove("opacity-0"), 10)
+
+  modalTopicsContainer.innerHTML = ""
 
   if (id) {
     editId = id
     const item = trackerData.find(t => t.id === id)
     modalSubject.value = item.subject
     modalUnit.value = item.unit
-    modalTopics.value = item.topics
-    modalCovered.value = item.covered
     modalTitle.textContent = "Edit Unit"
+    item.topics.forEach(t => createTopicInput(t.name))
   } else {
     editId = null
     modalSubject.value = ""
     modalUnit.value = ""
-    modalTopics.value = ""
-    modalCovered.value = 0
     modalTitle.textContent = "Add New Unit"
+    createTopicInput()
   }
 
   modalSubject.focus()
 }
 
 function closeModal() {
-  setTimeout(() => addModal.classList.add("hidden"), 200); // fade out
+  setTimeout(() => addModal.classList.add("hidden"), 200)
   addModal.classList.add("hidden")
 }
 
@@ -178,13 +266,33 @@ modalCancel.addEventListener("click", closeModal)
 modalSave.addEventListener("click", async () => {
   const subject = modalSubject.value.trim()
   const unit = modalUnit.value.trim()
-  const topics = modalTopics.value.trim()
-  const covered = parseInt(modalCovered.value) || 0
 
-  if (!subject || !unit || !topics) {
-    showToast("⚠ Please fill in all required fields.")
+  // Keep old topics' "done" status
+  let topics = []
+
+  if (editId) {
+    const oldUnit = trackerData.find(u => u.id === editId)
+    const oldTopicsMap = {}
+    oldUnit.topics.forEach(t => oldTopicsMap[t.name] = t.done)
+
+    topics = Array.from(modalTopicsContainer.querySelectorAll("input"))
+      .map(input => ({
+        name: input.value.trim(),
+        done: oldTopicsMap[input.value.trim()] || false
+      }))
+      .filter(t => t.name !== "")
+  } else {
+    topics = Array.from(modalTopicsContainer.querySelectorAll("input"))
+      .map(input => ({ name: input.value.trim(), done: false }))
+      .filter(t => t.name !== "")
+  }
+
+  if (!subject || !unit || topics.length === 0) {
+    showToast("⚠ Please fill all fields and add at least one topic.")
     return
   }
+
+  const covered = Math.round((topics.filter(t => t.done).length / topics.length) * 100)
 
   if (editId) {
     const { error } = await supabase
@@ -232,12 +340,17 @@ searchBox.addEventListener("input", renderCards)
 // =====================
 fetchData()
 
-// Register SW
+
+
+// =====================
+// Service Worker
+// =====================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => console.log('✅ SW registered'))
     .catch(err => console.error('❌ SW registration failed', err));
 }
+
 // =====================
 // Smart Reminder Logic
 // =====================
