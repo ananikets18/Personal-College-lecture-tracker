@@ -128,7 +128,7 @@ function renderCards() {
     const statusText = getStatus(item);
 
     const card = document.createElement("div");
-    card.className = "unit-card bg-slate-100 dark:bg-slate-800 rounded-lg p-4 shadow-lg space-y-3 transition-colors duration-300";
+    card.className = "unit-card bg-gray-50 dark:bg-slate-800 rounded-lg p-4 shadow space-y-3 transition-colors duration-300";
     card.dataset.id = item.id;
 
     const topicsHTML = item.topics
@@ -430,3 +430,21 @@ async function sendSmartReminder() {
 
 setInterval(sendSmartReminder, REMINDER_INTERVAL);
 setTimeout(sendSmartReminder, 15 * 1000);
+  const themeToggle = document.getElementById("themeToggle");
+  const root = document.documentElement;
+
+  if (localStorage.getItem("theme") === "dark") {
+    root.classList.add("dark");
+    themeToggle.textContent = "☀️";
+  }
+
+  themeToggle.addEventListener("click", () => {
+    root.classList.toggle("dark");
+    if (root.classList.contains("dark")) {
+      localStorage.setItem("theme", "dark");
+      themeToggle.textContent = "☀️"; 
+    } else {
+      localStorage.setItem("theme", "light");
+      themeToggle.textContent = "🌙";
+    }
+  });

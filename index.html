@@ -11,11 +11,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 </head>
-<body class="min-h-screen p-4 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300">
-  <div class="max-w-6xl mx-auto min-h-screen">
-    <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
+<body class="min-h-screen bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300">
+  <div class="bg-white w-full flex items-center justify-center dark:bg-slate-800 p-2">
+    <div class="max-w-full text-xs text-gray-500 text-center dark:text-gray-400 transition">Made with ❤️ By <a class="text-gray-700 hover:underline dark:text-gray-300" href="https://www.linkedin.com/in/aniket-shinde18/">Aniket Shinde</a></div>  
+  </div>
+
+  <div class="max-w-6xl mx-auto min-h-screen p-4">
+    <header class="flex items-center justify-between gap-4 mb-6">
       <div>
-        <h1 class="text-3xl font-semibold">📚 Personal College Tracker</h1>
+        <h1 class="text-2xl md:text-3xl font-semibold">📚 Personal College Tracker</h1>
         <p class="text-slate-500 dark:text-slate-400 text-sm">Track theory & labs easily.</p>
       </div>
       <!-- Light/Dark Toggle -->
@@ -27,16 +31,16 @@
     <main>
       <!-- Filters -->
       <div class="flex flex-wrap gap-2 mb-6 items-center">
-        <select id="subjectFilter" class="p-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition">
+        <select id="subjectFilter" class="p-2 rounded bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition">
           <!-- Options populated via JS -->
         </select>
-        <select id="statusFilter" class="p-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition">
+        <select id="statusFilter" class="p-2 rounded bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition">
           <option value="All">All Status</option>
           <option value="Behind">Behind</option>
           <option value="On Track">On Track</option>
           <option value="Ahead">Ahead</option>
         </select>
-        <input id="searchBox" class="flex-1 min-w-[140px] p-2 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition" placeholder="Search topic/unit..." />
+        <input id="searchBox" class="flex-1 min-w-[140px] p-2 rounded bg-gray-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 transition" placeholder="Search topic/unit..." />
         <button id="addUnitBtn" class="px-3 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition" accesskey="a">+ Add Unit</button>
       </div>
 
@@ -50,32 +54,23 @@
     </main>
   </div>
 
-  <!-- Add Unit Modal -->
-  <div id="addModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+    <div id="addModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
     <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-full max-w-md transition-colors">
       <h2 id="modalTitle" class="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Add New Unit</h2>
       <div class="mb-3">
         <label class="block text-slate-700 dark:text-slate-300 text-sm mb-1">Subject</label>
-        <input id="modalSubject" type="text" class="w-full px-3 py-2 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white transition" />
+        <input id="modalSubject" type="text" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-slate-700 text-slate-900 dark:text-white transition" />
       </div>
       <div class="mb-3">
         <label class="block text-slate-700 dark:text-slate-300 text-sm mb-1">Unit</label>
-        <input id="modalUnit" type="text" class="w-full px-3 py-2 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white transition" />
+        <input id="modalUnit" type="text" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-slate-700 text-slate-900 dark:text-white transition" />
       </div>
       <div class="mb-3">
-      <label class="block text-slate-700 dark:text-slate-300 text-sm mb-1">Topics</label>
+      <label class="block text-slate-500 dark:text-slate-300 text-sm mb-1">Topics</label>
       <div id="modalTopicsContainer" class="space-y-2">
-        <!-- Individual topic inputs will be appended here -->
       </div>
       <button id="addTopicBtn" type="button" class="mt-2 px-2 py-1 bg-sky-600 text-white rounded hover:bg-sky-700 transition">+ Add Topic</button>
     </div>
-<!-- 
-      <div class="flex gap-3 mb-4">
-        <div class="flex-1">
-          <label class="block text-slate-700 dark:text-slate-300 text-sm mb-1">Covered %</label>
-          <input id="modalCovered" type="number" min="0" max="100" value="0" class="w-full px-3 py-2 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white transition" />
-        </div>
-      </div> -->
       <div class="flex justify-end gap-2">
         <button id="modalCancel" class="px-3 py-2 bg-slate-400 dark:bg-slate-600 rounded text-white hover:bg-slate-500 dark:hover:bg-slate-500 transition">Cancel</button>
         <button id="modalSave" class="px-3 py-2 bg-sky-600 rounded text-white hover:bg-sky-700 transition">Save</button>
@@ -84,7 +79,13 @@
   </div>
 
   <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-2 rounded shadow-lg hidden"></div>
-  <footer class="text-sm text-gray-500 text-center pt-3 dark:text-gray-400 transition">&copy; 2025 - Made with 💓 By <a class="text-gray-700 dark:text-gray-300" href="https://www.linkedin.com/in/aniket-shinde18/">Aniket</a></footer>
+<footer class="text-sm text-gray-500 text-center p-3 dark:text-gray-400 transition">
+  💡 
+  <a class="underline" href="https://github.com/ananikets18/Personal-College-lecture-tracker/" target="_blank" rel="noopener noreferrer">
+    Explore our & Contribute your suggestions !
+  </a>
+</footer>
+
 
   <script src="supabaseClient.js" defer></script>
   <script src="app.js" defer></script>
@@ -93,28 +94,6 @@
   tailwind.config = {
     darkMode: 'class',
   }
-</script>
-
-<script>
-  const themeToggle = document.getElementById("themeToggle");
-  const root = document.documentElement;
-
-  // Load saved theme
-  if (localStorage.getItem("theme") === "dark") {
-    root.classList.add("dark");
-    themeToggle.textContent = "☀️";
-  }
-
-  themeToggle.addEventListener("click", () => {
-    root.classList.toggle("dark");
-    if (root.classList.contains("dark")) {
-      localStorage.setItem("theme", "dark");
-      themeToggle.textContent = "☀️"; // sun icon
-    } else {
-      localStorage.setItem("theme", "light");
-      themeToggle.textContent = "🌙"; // moon icon
-    }
-  });
 </script>
 
 </body>
