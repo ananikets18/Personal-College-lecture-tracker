@@ -136,7 +136,7 @@ function renderCards() {
         (t, idx) => `
       <label class="flex items-center space-x-2 text-slate-700 dark:text-slate-300 text-sm">
         <input type="checkbox" class="topic-checkbox" data-topic-idx="${idx}" ${t.done ? "checked" : ""}>
-        <span class="${t.done ? "line-through text-slate-400 dark:text-slate-500" : ""}">
+        <span class="${t.done ? "line-through text-slate-400 dark:text-slate-500" : ""} transition-all duration-300 ease-in-out">
           ${sanitize(t.name)}
         </span>
       </label>`
