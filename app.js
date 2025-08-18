@@ -136,7 +136,9 @@ function renderCards() {
         (t, idx) => `
       <label class="flex items-center space-x-2 text-slate-700 dark:text-slate-300 text-sm">
         <input type="checkbox" class="topic-checkbox" data-topic-idx="${idx}" ${t.done ? "checked" : ""}>
-        <span>${sanitize(t.name)}</span>
+        <span class="${t.done ? "line-through text-slate-400 dark:text-slate-500" : ""}">
+          ${sanitize(t.name)}
+        </span>
       </label>`
       )
       .join("");
@@ -210,7 +212,17 @@ cardsContainer.addEventListener("click", e => {
   if (e.target.classList.contains("edit-btn")) openModal(unitId);
   if (e.target.classList.contains("delete-btn")) deleteUnit(unitId);
 });
+cardsContainer.addEventListener("change", async e => {
+  if (!e.target.classList.contains("topic-checkbox")) return;
 
+  const card = e.target.closest(".unit-card");
+  const span = e.target.nextElementSibling; // <span> right after the checkbox
+  if (e.target.checked) {
+    span.classList.add("line-through", "text-slate-400", "dark:text-slate-500");
+  } else {
+    span.classList.remove("line-through", "text-slate-400", "dark:text-slate-500");
+  }
+});
 // =====================
 // Summary
 // =====================
