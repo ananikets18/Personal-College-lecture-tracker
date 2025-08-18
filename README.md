@@ -33,7 +33,7 @@ Access the app online: [lecture-tracker.netlify.app](https://lecture-tracker.net
 
 ## 🖼️ Screenshots
 
-<img width="4320" height="2937" alt="tracker-ui-3x" src="https://github.com/user-attachments/assets/c2e80841-0c94-491f-a65c-d2736abe8336" />
+<img width="1080" height="735" alt="tracker-ui-small" src="https://github.com/user-attachments/assets/d9314613-75bf-4764-bd99-a19fc82c67e3" />
 
 ---
 
