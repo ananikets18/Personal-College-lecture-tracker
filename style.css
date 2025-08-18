@@ -6,3 +6,11 @@
     box-sizing: border-box;
     font-family: "Inter",sans-serif;
 }
+
+#cardsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  grid-auto-flow: dense;
+  grid-template-rows: masonry; /* ⚠️ only works in Firefox + Safari TP for now */
+}
